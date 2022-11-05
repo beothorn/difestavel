@@ -1,12 +1,12 @@
 import os
 import threading
 
-from flask import Flask
+from flask import Flask, redirect, url_for
 from pyngrok import ngrok
 
 os.environ["FLASK_DEBUG"] = "1"
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder='web/static')
 port = 5000
 
 auth_token = os.environ["NGROK_TOKEN"]
@@ -25,7 +25,7 @@ app.config["BASE_URL"] = public_url
 # Define Flask routes
 @app.route("/")
 def index():
-    return "Hello from Colab!"
+    return redirect(url_for('static', filename='index.html'))
 
 # Start the Flask server in a new thread
 threading.Thread(target=app.run, kwargs={"use_reloader": False}).start()
