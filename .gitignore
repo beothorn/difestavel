@@ -1,3 +1,10 @@
+lib64
+pyvenv.cfg
+/.idea
+.vscode
+/venv
+/bin
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
