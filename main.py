@@ -7,6 +7,13 @@ from pyngrok import ngrok
 import torch
 from diffusers import StableDiffusionPipeline
 
+pipe_test = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16,
+                                                   revision="fp16")
+pipe_test = pipe_test.to("cuda")
+prompt_test = "a photo of an astronaut riding a horse on mars"
+image_test = pipe_test(prompt_test).images[0]
+print(image_test)
+
 os.environ["FLASK_DEBUG"] = "1"
 
 app = Flask(__name__, static_folder='web/static')
