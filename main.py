@@ -26,6 +26,7 @@ def setup_ngrok():
     ngrok.set_auth_token(auth_token)
     public_url = ngrok.connect(port).public_url
     print(" * ngrok tunnel \"{}\" -> \"http://127.0.0.1:{}\"".format(public_url, port))
+    return public_url
 
 
 def generate_image(prompt):
@@ -50,5 +51,5 @@ async def txt_to_img(param: TextToImageRequest):
 
 
 if __name__ == '__main__':
-    setup_ngrok()
-    uvicorn.run(app)
+    host = setup_ngrok()
+    uvicorn.run(app, host=host, port=8000)
