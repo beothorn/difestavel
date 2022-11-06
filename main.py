@@ -1,55 +1,54 @@
 import os
-import threading
-from io import BytesIO
+from pydantic import BaseModel
+from fastapi import FastAPI, Response
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+import random
+import string
+import uvicorn
 
-from flask import Flask, redirect, url_for, send_file
 from pyngrok import ngrok
 import torch
 from diffusers import StableDiffusionPipeline
 
-pipe_test = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16,
-                                                   revision="fp16")
-pipe_test = pipe_test.to("cuda")
-prompt_test = "a photo of an astronaut riding a horse on mars"
-image_test = pipe_test(prompt_test).images[0]
-print(image_test)
+app = FastAPI()
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
-os.environ["FLASK_DEBUG"] = "1"
-
-app = Flask(__name__, static_folder='web/static')
-port = 5000
-
-auth_token = os.environ["NGROK_TOKEN"]
-ngrok.set_auth_token(auth_token)
-
-# Open a ngrok tunnel to the HTTP server
-public_url = ngrok.connect(port).public_url
-print(" * ngrok tunnel \"{}\" -> \"http://127.0.0.1:{}\"".format(public_url, port))
-
-# Update any base URLs to use the public ngrok URL
-app.config["BASE_URL"] = public_url
+pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5",
+                                               torch_dtype=torch.float16,
+                                               revision="fp16")
+pipe = pipe.to("cuda")
 
 
-# ... Update inbound traffic via APIs to use the public-facing ngrok URL
+def setup_ngrok():
+    port = 5000
+    auth_token = os.environ["NGROK_TOKEN"]
+    ngrok.set_auth_token(auth_token)
+    public_url = ngrok.connect(port).public_url
+    print(" * ngrok tunnel \"{}\" -> \"http://127.0.0.1:{}\"".format(public_url, port))
 
-# Define Flask routes
-#@app.route("/main")
-#def index():
-#    return redirect(url_for('static', filename='index.html'))
 
-
-@app.route("/api/astronaut")
-def index():
-    img_io = BytesIO()
-    pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5", torch_dtype=torch.float16,
-                                                   revision="fp16")
-    pipe = pipe.to("cuda")
-    prompt = "a photo of an astronaut riding a horse on mars"
+def generate_image(prompt):
     image = pipe(prompt).images[0]
-    image.save(img_io, 'JPEG', quality=70)
-    img_io.seek(0)
-    return send_file(img_io, mimetype='image/jpeg')
+    img_name = ''.join(random.choice(string.ascii_letters + string.digits) for i in range(32))
+    image.save('/tmp/' + img_name, 'JPEG', quality=90)
+    return img_name
 
 
-# Start the Flask server in a new thread
-threading.Thread(target=app.run, kwargs={"use_reloader": False}).start()
+class TextToImageRequest(BaseModel):
+    prompt: str
+
+
+@app.get("/api/img/{id}")
+async def get_img(id):
+    return FileResponse('/tmp/' + id)
+
+
+@app.post("/api/txt2img")
+async def txt_to_img(param: TextToImageRequest):
+    return {"src": generate_image(param.prompt)}
+
+
+if __name__ == '__main__':
+    setup_ngrok()
+    uvicorn.run(app)

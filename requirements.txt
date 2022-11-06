@@ -1,6 +1,8 @@
 pyngrok
-flask
+fastapi
+uvicorn
 diffusers
 transformers
 scipy
 torch
+accelerate
