@@ -52,5 +52,5 @@ async def txt_to_img(param: TextToImageRequest):
 
 
 if __name__ == '__main__':
-    host = setup_ngrok()
-    uvicorn.run(app, host=host, port=port)
+    setup_ngrok()
+    uvicorn.run(app, host="127.0.0.1", port=port)
