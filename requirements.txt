@@ -1,2 +1,6 @@
 pyngrok
 flask
+diffusers
+transformers
+scipy
+torch
