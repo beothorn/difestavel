@@ -20,7 +20,7 @@ fetch("/api/txt2img",{
         {"prompt":"a photo of a duck riding a horse on mars"}
     )
 }).then(r => r.json()).then(r => {
-    document.getElementById("current").src = r.src;
+    document.getElementById("current").src = "/api/img" + r.src;
 })
 </script>
 
