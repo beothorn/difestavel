@@ -19,9 +19,10 @@ pipe = StableDiffusionPipeline.from_pretrained("runwayml/stable-diffusion-v1-5",
                                                revision="fp16")
 pipe = pipe.to("cuda")
 
+port = 5000
+
 
 def setup_ngrok():
-    port = 5000
     auth_token = os.environ["NGROK_TOKEN"]
     ngrok.set_auth_token(auth_token)
     public_url = ngrok.connect(port).public_url
@@ -52,4 +53,4 @@ async def txt_to_img(param: TextToImageRequest):
 
 if __name__ == '__main__':
     host = setup_ngrok()
-    uvicorn.run(app, host=host, port=8000)
+    uvicorn.run(app, host=host, port=port)
