@@ -33,9 +33,9 @@ app.config["BASE_URL"] = public_url
 # ... Update inbound traffic via APIs to use the public-facing ngrok URL
 
 # Define Flask routes
-@app.route("/")
-def index():
-    return redirect(url_for('static', filename='index.html'))
+#@app.route("/main")
+#def index():
+#    return redirect(url_for('static', filename='index.html'))
 
 
 @app.route("/api/astronaut")
